@@ -34,14 +34,14 @@ jobs:
       # Build and test frontend
       - name: Build and test frontend
         run: |
-          docker-compose build frontend
-          docker-compose run --rm frontend npm test
+          docker compose build frontend
+          docker compose run --rm frontend npm test
 
       # Build and test API
       - name: Build and test API
         run: |
-          docker-compose build api
-          docker-compose run --rm api npm test
+          docker compose build api
+          docker compose run --rm api npm test
 
       # If on main branch, tag and push images
       - name: Tag and push frontend image
