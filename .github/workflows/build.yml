@@ -23,14 +23,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # Modifier le docker-compose.yml pour spécifier les noms d'images
-    - name: Update docker-compose.yml with image names
-      run: |
-        # Remplacer les sections build par des images nommées
-        sed -i 's/build: \.\/frontend/build: \.\/frontend\n    image: frontend:latest/g' docker-compose.yml
-        sed -i 's/build: \.\/api/build: \.\/api\n    image: api:latest/g' docker-compose.yml
-        cat docker-compose.yml
-
+    
     # Build les services
     - name: Build services
       run: docker compose build
