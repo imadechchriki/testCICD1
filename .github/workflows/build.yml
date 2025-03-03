@@ -23,17 +23,22 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # Build and test frontend
-    - name: Build frontend
-      run: docker compose build frontend
+    # Build avec noms d'images spécifiques
+    - name: Build services
+      run: |
+        # Utilise la nouvelle syntaxe sans tiret
+        docker compose build --pull
+        
+        # Obtenir les noms complets des images générées par docker-compose
+        FRONTEND_IMAGE=$(docker compose images -q frontend)
+        API_IMAGE=$(docker compose images -q api)
+        
+        echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
+        echo "API_IMAGE=$API_IMAGE" >> $GITHUB_ENV
 
     - name: Test frontend
       run: |
         docker compose run --rm frontend npm test || true
-
-    # Build and test API
-    - name: Build API
-      run: docker compose build api
 
     - name: Test API
       run: |
@@ -43,12 +48,12 @@ jobs:
     - name: Tag and push images to DockerHub
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
-        # Tag avec le hash du commit et latest
-        docker tag frontend imadch/cicd:frontend-${{ github.sha }}
-        docker tag frontend imadch/cicd:frontend-latest
+        # Tag avec les noms d'images complets
+        docker tag ${{ env.FRONTEND_IMAGE }} imadch/cicd:frontend-${{ github.sha }}
+        docker tag ${{ env.FRONTEND_IMAGE }} imadch/cicd:frontend-latest
         
-        docker tag api imadch/cicd:api-${{ github.sha }}
-        docker tag api imadch/cicd:api-latest
+        docker tag ${{ env.API_IMAGE }} imadch/cicd:api-${{ github.sha }}
+        docker tag ${{ env.API_IMAGE }} imadch/cicd:api-latest
         
         # Push des images
         docker push imadch/cicd:frontend-${{ github.sha }}
@@ -56,3 +61,24 @@ jobs:
         docker push imadch/cicd:api-${{ github.sha }}
         docker push imadch/cicd:api-latest
 
+  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Option 1: Deploy to a server via SSH
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /path/to/your/project
+          git pull
+          docker compose pull
+          docker compose up -d
