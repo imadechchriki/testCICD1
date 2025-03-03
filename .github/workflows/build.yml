@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master, dev ]
+    branches: [main, master, dev]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   build-and-test:
@@ -23,32 +23,26 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    
-    # Build les services
     - name: Build services
       run: docker compose build
 
     - name: Test frontend
-      run: |
-        docker compose run --rm frontend npm test || true
+      run: docker compose run --rm frontend npm test
 
     - name: Test API
-      run: |
-        docker compose run --rm api npm test || true
+      run: docker compose run --rm api npm test
 
-    # Push to DockerHub if on main/master branch
     - name: Tag and push images to DockerHub
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
-    # Utilisation directe des noms d'images définis dans docker-compose.yml
-     docker push imadch/cicd:frontend-latest
-     docker push imadch/cicd:api-latest
-    
-    # Optionnel: tag avec hash pour historique
-     docker tag imadch/cicd:frontend-latest imadch/cicd:frontend-${{ github.sha }}
-     docker tag imadch/cicd:api-latest imadch/cicd:api-${{ github.sha }}
-     docker push imadch/cicd:frontend-${{ github.sha }}
-     docker push imadch/cicd:api-${{ github.sha }}
-
-
-    
+        # Push des images latest
+        docker push imadch/cicd:frontend-latest
+        docker push imadch/cicd:api-latest
+        
+        # Tagging avec le SHA du commit
+        docker tag imadch/cicd:frontend-latest imadch/cicd:frontend-${{ github.sha }}
+        docker tag imadch/cicd:api-latest imadch/cicd:api-${{ github.sha }}
+        
+        # Push des tags avec SHA
+        docker push imadch/cicd:frontend-${{ github.sha }}
+        docker push imadch/cicd:api-${{ github.sha }}
