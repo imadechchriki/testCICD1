@@ -40,18 +40,15 @@ jobs:
     - name: Tag and push images to DockerHub
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
-        # Tag avec le hash du commit et latest
-        docker tag frontend:latest imadch/cicd:frontend-${{ github.sha }}
-        docker tag frontend:latest imadch/cicd:frontend-latest
-        
-        docker tag api:latest imadch/cicd:api-${{ github.sha }}
-        docker tag api:latest imadch/cicd:api-latest
-        
-        # Push des images
-        docker push imadch/cicd:frontend-${{ github.sha }}
-        docker push imadch/cicd:frontend-latest
-        docker push imadch/cicd:api-${{ github.sha }}
-        docker push imadch/cicd:api-latest
+    # Utilisation directe des noms d'images définis dans docker-compose.yml
+     docker push imadch/cicd:frontend-latest
+     docker push imadch/cicd:api-latest
+    
+    # Optionnel: tag avec hash pour historique
+     docker tag imadch/cicd:frontend-latest imadch/cicd:frontend-${{ github.sha }}
+     docker tag imadch/cicd:api-latest imadch/cicd:api-${{ github.sha }}
+     docker push imadch/cicd:frontend-${{ github.sha }}
+     docker push imadch/cicd:api-${{ github.sha }}
 
 
     
