@@ -23,15 +23,13 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # Build avec noms d'images spécifiques
     - name: Build services
       run: |
-        # Utilise la nouvelle syntaxe sans tiret
         docker compose build --pull
         
-        # Obtenir les noms complets des images générées par docker-compose
-        FRONTEND_IMAGE=$(docker compose images -q frontend)
-        API_IMAGE=$(docker compose images -q api)
+        # Get image IDs using Docker service labels
+        FRONTEND_IMAGE=$(docker images --filter "label=com.docker.compose.service=frontend" --format "{{.ID}}" -q | head -n 1)
+        API_IMAGE=$(docker images --filter "label=com.docker.compose.service=api" --format "{{.ID}}" -q | head -n 1)
         
         echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
         echo "API_IMAGE=$API_IMAGE" >> $GITHUB_ENV
@@ -44,22 +42,16 @@ jobs:
       run: |
         docker compose run --rm api npm test || true
 
-    # Push to DockerHub if on main/master branch
     - name: Tag and push images to DockerHub
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
-        # Tag avec les noms d'images complets
         docker tag ${{ env.FRONTEND_IMAGE }} imadch/cicd:frontend-${{ github.sha }}
         docker tag ${{ env.FRONTEND_IMAGE }} imadch/cicd:frontend-latest
         
         docker tag ${{ env.API_IMAGE }} imadch/cicd:api-${{ github.sha }}
         docker tag ${{ env.API_IMAGE }} imadch/cicd:api-latest
         
-        # Push des images
         docker push imadch/cicd:frontend-${{ github.sha }}
         docker push imadch/cicd:frontend-latest
         docker push imadch/cicd:api-${{ github.sha }}
         docker push imadch/cicd:api-latest
-
-
-   
