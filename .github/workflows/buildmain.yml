@@ -1,0 +1,49 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build and push Frontend image
+        run: |
+          # Build frontend image
+          docker build \
+            -t imadch/cicd:frontend-latest \
+            -f ./frontend/Dockerfile \
+            ./frontend
+
+          # (Optional) Tag with commit SHA for better traceability
+          docker tag imadch/cicd:frontend-latest imadch/cicd:frontend-${{ github.sha }}
+
+          # Push images
+          docker push imadch/cicd:frontend-latest
+          docker push imadch/cicd:frontend-${{ github.sha }}
+
+      - name: Build and push API image
+        run: |
+          # Build api image
+          docker build \
+            -t imadch/cicd:api-latest \
+            -f ./api/Dockerfile \
+            ./api
+
+          # (Optional) Tag with commit SHA
+          docker tag imadch/cicd:api-latest imadch/cicd:api-${{ github.sha }}
+
+          # Push images
+          docker push imadch/cicd:api-latest
+          docker push imadch/cicd:api-${{ github.sha }}
