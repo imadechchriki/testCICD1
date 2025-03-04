@@ -1,44 +1,49 @@
-name: CI/CD Pipeline
+name: CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Build and push Frontend image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./frontend
-          push: true
-          tags: imadch/cicd-frontend:latest
+        run: |
+          # Build frontend image
+          docker build \
+            -t imadch/cicd:frontend-latest \
+            -f ./frontend/Dockerfile \
+            ./frontend
+
+          # (Optional) Tag with commit SHA for better traceability
+          docker tag imadch/cicd:frontend-latest imadch/cicd:frontend-${{ github.sha }}
+
+          # Push images
+          docker push imadch/cicd:frontend-latest
+          docker push imadch/cicd:frontend-${{ github.sha }}
 
       - name: Build and push API image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./api
-          push: true
-          tags: imadch/cicd-api:latest
-
-      - name: (Optional) Validate docker-compose configuration
         run: |
-          docker-compose build
-          docker-compose up -d
-          sleep 10
-          docker-compose down
+          # Build api image
+          docker build \
+            -t imadch/cicd:api-latest \
+            -f ./api/Dockerfile \
+            ./api
+
+          # (Optional) Tag with commit SHA
+          docker tag imadch/cicd:api-latest imadch/cicd:api-${{ github.sha }}
+
+          # Push images
+          docker push imadch/cicd:api-latest
+          docker push imadch/cicd:api-${{ github.sha }}
