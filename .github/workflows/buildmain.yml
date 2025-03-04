@@ -1,45 +1,44 @@
-name: Docker Compose CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push frontend image
-        run: |
-          docker build -t imadch/cicd:frontend-${{ github.sha }} ./frontend
-          docker tag imadch/cicd:frontend-${{ github.sha }} imadch/cicd:frontend-latest
-          docker push imadch/cicd:frontend-${{ github.sha }}
-          docker push imadch/cicd:frontend-latest
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./frontend
+          push: true
+          tags: imadch/cicd-frontend:latest
 
-      - name: Build and push api image
-        run: |
-          docker build -t imadch/cicd:api-${{ github.sha }} ./api
-          docker tag imadch/cicd:api-${{ github.sha }} imadch/cicd:api-latest
-          docker push imadch/cicd:api-${{ github.sha }}
-          docker push imadch/cicd:api-latest
+      - name: Build and push API image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./api
+          push: true
+          tags: imadch/cicd-api:latest
 
-      - name: Update docker-compose.yml with new tags
+      - name: (Optional) Validate docker-compose configuration
         run: |
-          sed -i "s|build: ./frontend|image: imadch/cicd:frontend-${{ github.sha }}|g" docker-compose.yml
-          sed -i "s|build: ./api|image: imadch/cicd:api-${{ github.sha }}|g" docker-compose.yml
-
-      - name: Commit updated docker-compose
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add docker-compose.yml
-          git commit -m "Update image tags in docker-compose [skip ci]"
-          git push
+          docker-compose build
+          docker-compose up -d
+          sleep 10
+          docker-compose down
