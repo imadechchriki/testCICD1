@@ -13,7 +13,7 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-
+      
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
       
@@ -23,21 +23,41 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build services
+    # Modifier le docker-compose.yml pour spécifier les noms d'images
+    - name: Update docker-compose.yml with image names
       run: |
-        docker compose --profile build build --pull
-        
-        FRONTEND_IMAGE=$(docker images --filter "label=com.docker.compose.service=frontend" --format "{{.ID}}" -q)
-        API_IMAGE=$(docker images --filter "label=com.docker.compose.service=api" --format "{{.ID}}" -q)
-        
-        echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
-        echo "API_IMAGE=$API_IMAGE" >> $GITHUB_ENV
+        # Remplacer les sections build par des images nommées
+        sed -i 's/build: \.\/frontend/build: \.\/frontend\n    image: frontend:latest/g' docker-compose.yml
+        sed -i 's/build: \.\/api/build: \.\/api\n    image: api:latest/g' docker-compose.yml
+        cat docker-compose.yml
 
-    - name: Tag and push images
+    # Build les services
+    - name: Build services
+      run: docker compose build
+
+    - name: Test frontend
+      run: |
+        docker compose run --rm frontend npm test || true
+
+    - name: Test API
+      run: |
+        docker compose run --rm api npm test || true
+
+    # Push to DockerHub if on main/master branch
+    - name: Tag and push images to DockerHub
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
-        docker tag ${{ env.FRONTEND_IMAGE }} imadch/cicd:frontend-${{ github.sha }}
-        docker tag ${{ env.API_IMAGE }} imadch/cicd:api-${{ github.sha }}
+        # Tag avec le hash du commit et latest
+        docker tag frontend:latest imadch/cicd:frontend-${{ github.sha }}
+        docker tag frontend:latest imadch/cicd:frontend-latest
         
+        docker tag api:latest imadch/cicd:api-${{ github.sha }}
+        docker tag api:latest imadch/cicd:api-latest
+        
+        # Push des images
         docker push imadch/cicd:frontend-${{ github.sha }}
+        docker push imadch/cicd:frontend-latest
         docker push imadch/cicd:api-${{ github.sha }}
+        docker push imadch/cicd:api-latest
+
+  
