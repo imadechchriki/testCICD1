@@ -60,4 +60,4 @@ jobs:
         docker push imadch/cicd:api-${{ github.sha }}
         docker push imadch/cicd:api-latest
 
-  
+ 
