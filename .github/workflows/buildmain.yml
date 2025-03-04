@@ -38,8 +38,8 @@ jobs:
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
           
           # Modify Docker Compose to use explicit image names
-          sed -i "s/build: ./frontend/build: ./frontend\n    image: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest/" docker-compose.yml
-          sed -i "s/build: ./api/build: ./api\n    image: ${{ secrets.DOCKERHUB_USERNAME }}/api:latest/" docker-compose.yml
+          sed -i "s/build: ./frontend/build: ./frontend\n    image: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest/" docker compose.yml
+          sed -i "s/build: ./api/build: ./api\n    image: ${{ secrets.DOCKERHUB_USERNAME }}/api:latest/" docker compose.yml
 
       # Build images
       - name: Build Docker images
@@ -87,25 +87,7 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/api:${{ github.sha }}
 
-  deploy:
-    needs: build-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Deploy to production server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.PROD_HOST }}
-          username: ${{ secrets.PROD_USERNAME }}
-          key: ${{ secrets.PROD_SSH_KEY }}
-          script: |
-            cd /path/to/your/project
-            git pull
-            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
-            docker-compose pull
+ 
             docker-compose down
             docker-compose up -d
             docker system prune -af
