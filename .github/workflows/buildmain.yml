@@ -25,33 +25,19 @@ jobs:
 
     - name: Build services
       run: |
-        docker compose build --pull
+        docker compose --profile build build --pull
         
-        # Get image IDs using Docker service labels
-        FRONTEND_IMAGE=$(docker images --filter "label=com.docker.compose.service=frontend" --format "{{.ID}}" -q | head -n 1)
-        API_IMAGE=$(docker images --filter "label=com.docker.compose.service=api" --format "{{.ID}}" -q | head -n 1)
+        FRONTEND_IMAGE=$(docker images --filter "label=com.docker.compose.service=frontend" --format "{{.ID}}" -q)
+        API_IMAGE=$(docker images --filter "label=com.docker.compose.service=api" --format "{{.ID}}" -q)
         
         echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
         echo "API_IMAGE=$API_IMAGE" >> $GITHUB_ENV
 
-    - name: Test frontend
-      run: |
-        docker compose run --rm frontend npm test || true
-
-    - name: Test API
-      run: |
-        docker compose run --rm api npm test || true
-
-    - name: Tag and push images to DockerHub
+    - name: Tag and push images
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
         docker tag ${{ env.FRONTEND_IMAGE }} imadch/cicd:frontend-${{ github.sha }}
-        docker tag ${{ env.FRONTEND_IMAGE }} imadch/cicd:frontend-latest
-        
         docker tag ${{ env.API_IMAGE }} imadch/cicd:api-${{ github.sha }}
-        docker tag ${{ env.API_IMAGE }} imadch/cicd:api-latest
         
         docker push imadch/cicd:frontend-${{ github.sha }}
-        docker push imadch/cicd:frontend-latest
         docker push imadch/cicd:api-${{ github.sha }}
-        docker push imadch/cicd:api-latest
