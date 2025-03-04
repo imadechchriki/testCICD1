@@ -88,6 +88,6 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/api:${{ github.sha }}
 
  
-            docker-compose down
-            docker-compose up -d
+            docker compose down
+            docker compose up -d
             docker system prune -af
