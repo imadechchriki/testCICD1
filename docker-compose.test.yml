@@ -2,7 +2,7 @@ version: "3"
 
 services:
   frontend:
-    image: imadch/cicd:frontend-latest
+    image: imadch/cicdpart1:frontend-latest
     restart: always
     ports:
       - "3000:3000"
@@ -10,7 +10,7 @@ services:
       - api
 
   api:
-    image: imadch/cicd:api-latest
+    image: imadch/cicdpart1:api-latest
     restart: always
     ports:
       - "5000:5000"

@@ -1,0 +1,29 @@
+[build]
+cmd = "npm install && npm run build"
+
+[start]
+cmd = "npm start"
+
+3. Verify Image Availability:
+Ensure the image `imadch/cicd:api-latest` is:
+- Actually pushed to DockerHub
+- Publicly accessible or you're logged in
+- Matches the exact tag and repository name
+
+4. Check Docker Compose:
+In your `docker-compose.yml` or equivalent, ensure the image pull is configured correctly:
+
+```yaml
+services:
+  api:
+    image: imadch/cicd:api-latest
+    pull_policy: always  # Always try to pull latest image
+```
+
+5. Manual Troubleshooting:
+Try pulling the image manually to verify accessibility:
+```bash
+docker pull imadch/cicd:api-latest
+```
+
+Would you like me to help you diagnose which of these might be causing the build failure?
