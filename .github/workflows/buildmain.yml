@@ -54,12 +54,27 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      - name: Verify Railway Installation
+        run: railway --version
+
       - name: Deploy to Railway
-        run: railway up
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "Error: Railway token is missing"
+            exit 1
+          fi
+          railway login
+          railway link
+          railway up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
