@@ -8,7 +8,7 @@ function startInterval() {
 
 async function saveTime() {
   const time = this.currentTime
-  const res = await fetch('http://localhost:5000/times', {
+  const res = await fetch('cicd-production-d9de.up.railway.app/times', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ async function saveTime() {
 }
 
 async function deleteTime(id) {
-  const res = await fetch(`http://localhost:5000/time/${id}`, {
+  const res = await fetch(`cicd-production-d9de.up.railway.app/time/${id}`, {
     method: 'DELETE',
   })
   const json = await res.json()

@@ -19,7 +19,7 @@ export default {
   },
   created: async function () {
     this.startInterval()
-    const res = await fetch('http://localhost:5000/times')
+    const res = await fetch('cicd-production-d9de.up.railway.app/times')
     const json = await res.json()
     if (json.length) this.savedTimes = json
   },
