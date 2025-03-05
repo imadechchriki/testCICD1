@@ -27,7 +27,7 @@ jobs:
             ./frontend
 
           # (Optional) Tag with commit SHA for better traceability
-          docker tag imadch/cicdpart1:frontend-latest imadch/cicd:frontend-${{ github.sha }}
+          docker tag imadch/cicdpart1:frontend-latest imadch/cicdpart1:frontend-${{ github.sha }}
 
           # Push images
           docker push imadch/cicdpart1:frontend-latest
@@ -42,7 +42,7 @@ jobs:
             ./api
 
           # (Optional) Tag with commit SHA
-          docker tag imadch/cicd:api-latest imadch/cicdpart1:api-${{ github.sha }}
+          docker tag imadch/cicdpart1:api-latest imadch/cicdpart1:api-${{ github.sha }}
 
           # Push images
           docker push imadch/cicdpart1:api-latest
