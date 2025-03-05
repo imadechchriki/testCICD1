@@ -69,12 +69,10 @@ jobs:
 
       - name: Deploy to Railway
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "Error: Railway token is missing"
-            exit 1
-          fi
-          railway login
-          railway link
-          railway up
+          # Ensure Railway CLI is installed
+          railway --version
+          
+          # Deploy using token directly
+          railway up --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
