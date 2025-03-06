@@ -1,18 +1,16 @@
-[deploy]
-startCommand = ""
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
+[services]
 
-[[services]]
-name = "api"
-image = "imadch/cicdpart1:api-latest"
-internal_port = 5000
+  [services.api]
+  image = "imadch/cicdpart1:api-latest"
+  internal_port = 5000
+  # Important : désactiver le build automatique
+  no_build = true
 
-[services.envs]
-PORT = "5000"
-MYSQL_HOST = "mysql-339b51b0.railway.internal" 
-MYSQL_USER = "root"
-MYSQL_PASSWORD = "iZryzEnACIfutJpNXWSgSrGbwqtCNHAe"
-MYSQL_DATABASE = "railway"
-MYSQL_PORT = "3306"
+  [services.api.envs]
+  PORT = "5000"
+  MYSQL_HOST = "mysql-339b51b0.railway.internal"
+  MYSQL_USER = "root"
+  MYSQL_DATABASE = "railway"
+  MYSQL_PORT = "3306"
+  MYSQL_PASSWORD = "iZryzEnACIfutJpNXWSgSrGbwqtCNHAe"
 
