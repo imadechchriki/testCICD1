@@ -1,14 +1,14 @@
-# railway.toml
-
 [services]
+
   [services.api]
-  # On déploie directement l'image Docker (plus de détection auto)
-  image = "imadch/cicd:api-latest"
+  # Soit vous indiquez l'image Docker
+  image = "imadch/cicdpart1:api-latest"
   internal_port = 5000
 
   [services.api.envs]
   PORT = "5000"
-  MYSQL_HOST = "db"
+  MYSQL_HOST = "mysql-339b51b0.railway.internal"
   MYSQL_USER = "root"
-  MYSQL_PASSWORD = "root"
-  MYSQL_DATABASE = "time_db"
+  MYSQL_PASSWORD = "iZryzEnACIfutJpNXWSgSrGbwqtCNHAe"
+  MYSQL_DATABASE = "railway"
+  MYSQL_PORT = "3306"
